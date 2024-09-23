@@ -1,0 +1,16 @@
+workflows:
+  build:
+    name: Build & Deploy
+    environment:
+      flutter: stable
+      xcode: latest
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+    scripts:
+      - flutter pub get
+      - flutter build web --release
+    artifacts:
+      - build/web/*

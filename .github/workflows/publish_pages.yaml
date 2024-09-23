@@ -1,0 +1,37 @@
+name: Publish to Github Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract repository name
+        run: echo "repoName=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_ENV
+      - name: set Base href
+        run: sed -i "s|<base href=\".*\">|<base href=\"/${{ env.repoName }}/\">|g" build/web/index.html
+      - name: Install ZIP tool
+        run: sudo apt-get install zip
+      - name: Archive
+        run: |
+          cd build
+          mkdir artifact
+          zip -r artifact/website.zip web
+          cd ..
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: build/artifact/website.zip
+      - name: Deploy to Github Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
